@@ -12,6 +12,8 @@ const medicineRoutes = require('./routes/medicineRoutes');
 const favoriteRoutes = require('./routes/favoriteRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const pharmacyHoursRoutes = require('./routes/pharmacyHoursRoutes');
+const batchRoutes = require('./routes/batchRoutes');
+const stockRoutes = require('./routes/stockRoutes');
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
@@ -45,6 +47,8 @@ app.use('/api/medicines', medicineRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/pharmacy-hours', pharmacyHoursRoutes);
+app.use('/api', batchRoutes);
+app.use('/api/stock', stockRoutes);
 
 app.use((err, req, res, next) => {
   const status = err.status || 500;

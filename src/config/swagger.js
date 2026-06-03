@@ -23,6 +23,43 @@ const definition = {
         type: 'object',
         properties: { error: { type: 'string' } },
       },
+      BatchCreateRequest: {
+        type: 'object',
+        required: ['batchNumber', 'quantity', 'expiryDate'],
+        properties: {
+          batchNumber: { type: 'string', example: 'L2026-0001' },
+          quantity: { type: 'integer', minimum: 0, example: 100 },
+          manufacturingDate: { type: 'string', format: 'date', example: '2026-01-10' },
+          expiryDate: { type: 'string', format: 'date', example: '2027-01-10' },
+          notes: { type: 'string' },
+        },
+      },
+      StockMovementEntradaRequest: {
+        type: 'object',
+        required: ['medicineId', 'type', 'batchNumber', 'quantity', 'expiryDate'],
+        properties: {
+          medicineId: { type: 'integer', example: 1 },
+          type: { type: 'string', enum: ['entrada'], example: 'entrada' },
+          batchNumber: { type: 'string', example: 'L2026-0001' },
+          quantity: { type: 'integer', minimum: 1, example: 50 },
+          expiryDate: { type: 'string', format: 'date', example: '2027-01-10' },
+          manufacturingDate: { type: 'string', format: 'date', example: '2026-01-10' },
+          motivo: { type: 'string', example: 'compra' },
+          observacao: { type: 'string', example: 'NF 12345' },
+        },
+      },
+      StockMovementSaidaRequest: {
+        type: 'object',
+        required: ['medicineId', 'type', 'quantity'],
+        properties: {
+          medicineId: { type: 'integer', example: 1 },
+          type: { type: 'string', enum: ['saida'], example: 'saida' },
+          quantity: { type: 'integer', minimum: 1, example: 3 },
+          motivo: { type: 'string', example: 'dispensacao' },
+          pacienteId: { type: 'string', example: 'PAC-001' },
+          observacao: { type: 'string' },
+        },
+      },
     },
   },
   paths: {
@@ -291,6 +328,82 @@ const definition = {
         tags: ['PharmacyHours'],
         summary: 'Próxima abertura',
         responses: { 200: { description: 'OK' } },
+      },
+    },
+    '/api/medicines/{medicineId}/batches': {
+      get: {
+        tags: ['Batches'],
+        summary: 'Listar lotes por medicamento',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'medicineId', in: 'path', required: true, schema: { type: 'integer' } },
+          { name: 'status', in: 'query', required: false, schema: { type: 'string', enum: ['active', 'expired', 'all'], default: 'active' } },
+        ],
+        responses: { 200: { description: 'OK' }, 401: { description: 'Não autorizado' }, 403: { description: 'Sem permissão' }, 404: { description: 'Medicamento não encontrado' } },
+      },
+      post: {
+        tags: ['Batches'],
+        summary: 'Cadastrar novo lote para um medicamento',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'medicineId', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/BatchCreateRequest' } } },
+        },
+        responses: { 200: { description: 'OK' }, 400: { description: 'Dados inválidos' }, 401: { description: 'Não autorizado' }, 403: { description: 'Sem permissão' } },
+      },
+    },
+    '/api/batches/{batchId}/expire': {
+      post: {
+        tags: ['Batches'],
+        summary: 'Marcar lote como inativo e registrar baixa',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'batchId', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { 200: { description: 'OK' }, 401: { description: 'Não autorizado' }, 403: { description: 'Sem permissão' }, 404: { description: 'Não encontrado' } },
+      },
+    },
+    '/api/batches/expiring': {
+      get: {
+        tags: ['Batches'],
+        summary: 'Listar lotes com validade próxima',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'days', in: 'query', required: false, schema: { type: 'integer', default: 30 } }],
+        responses: { 200: { description: 'OK' }, 401: { description: 'Não autorizado' }, 403: { description: 'Sem permissão' } },
+      },
+    },
+    '/api/batches/trace': {
+      get: {
+        tags: ['Batches'],
+        summary: 'Rastrear informações públicas de um lote',
+        parameters: [{ name: 'batchNumber', in: 'query', required: true, schema: { type: 'string' } }],
+        responses: { 200: { description: 'OK' }, 404: { description: 'Não encontrado' } },
+      },
+    },
+    '/api/stock/movements': {
+      post: {
+        tags: ['Stock'],
+        summary: 'Registrar movimentação de estoque (entrada/saída via PEPS)',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                oneOf: [
+                  { $ref: '#/components/schemas/StockMovementEntradaRequest' },
+                  { $ref: '#/components/schemas/StockMovementSaidaRequest' },
+                ],
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'OK' },
+          400: { description: 'Dados inválidos' },
+          401: { description: 'Não autorizado' },
+          403: { description: 'Sem permissão' },
+          409: { description: 'Estoque insuficiente' },
+        },
       },
     },
   },

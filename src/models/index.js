@@ -8,6 +8,8 @@ const PasswordReset = require('./PasswordReset')(sequelize, Sequelize.DataTypes)
 const Favorite = require('./Favorite')(sequelize, Sequelize.DataTypes);
 const Notification = require('./Notification')(sequelize, Sequelize.DataTypes);
 const PharmacyHours = require('./PharmacyHours')(sequelize, Sequelize.DataTypes);
+const Batch = require('./Batch')(sequelize, Sequelize.DataTypes);
+const ExpiryAlert = require('./ExpiryAlert')(sequelize, Sequelize.DataTypes);
 
 User.hasMany(PasswordReset, { foreignKey: 'user_id' });
 PasswordReset.belongsTo(User, { foreignKey: 'user_id' });
@@ -27,11 +29,22 @@ StockMovement.belongsTo(Medicine, { foreignKey: 'medicine_id' });
 User.hasMany(StockMovement, { foreignKey: 'usuario_id' });
 StockMovement.belongsTo(User, { foreignKey: 'usuario_id' });
 
+Medicine.hasMany(Batch, { foreignKey: 'medicine_id' });
+Batch.belongsTo(Medicine, { foreignKey: 'medicine_id' });
+
+Batch.hasMany(StockMovement, { foreignKey: 'batch_id' });
+StockMovement.belongsTo(Batch, { foreignKey: 'batch_id' });
+
+Batch.hasMany(ExpiryAlert, { foreignKey: 'batch_id' });
+ExpiryAlert.belongsTo(Batch, { foreignKey: 'batch_id' });
+
 module.exports = {
   sequelize,
   User,
   Medicine,
   StockMovement,
+  Batch,
+  ExpiryAlert,
   PasswordReset,
   Favorite,
   Notification,

@@ -8,6 +8,8 @@ module.exports = (sequelize, DataTypes) => {
       motivo: { type: DataTypes.STRING },
       observacao: { type: DataTypes.TEXT },
       usuario_id: { type: DataTypes.INTEGER },
+      batch_id: { type: DataTypes.INTEGER },
+      batch_number: { type: DataTypes.STRING(100) },
     },
     {
       tableName: 'stock_movements',

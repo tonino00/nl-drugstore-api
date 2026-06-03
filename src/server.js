@@ -11,8 +11,11 @@ async function bootstrap() {
   await sequelize.authenticate();
 
   const shouldSync = String(process.env.DB_SYNC || '').toLowerCase() === 'true';
+  const alter = String(process.env.DB_SYNC_ALTER || '').toLowerCase() === 'true';
+  const force = String(process.env.DB_SYNC_FORCE || '').toLowerCase() === 'true';
   if (shouldSync) {
-    await sequelize.sync();
+    const options = force ? { force: true } : alter ? { alter: true } : undefined;
+    await sequelize.sync(options);
   }
 
   notificationService.startPolling();
