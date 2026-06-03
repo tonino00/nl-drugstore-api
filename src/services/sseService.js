@@ -9,7 +9,17 @@ class SseService {
       this.connections.set(key, new Set());
     }
 
-    this.connections.get(key).add(res);
+    const set = this.connections.get(key);
+    const maxPerUser = Number(process.env.SSE_MAX_CONNECTIONS_PER_USER || process.env.RATE_LIMIT_MAX_SSE_CONNECTIONS || 5);
+
+    if (set.size >= maxPerUser) {
+      // Remove a conexão mais antiga para abrir espaço à nova
+      const [oldest] = set;
+      try { oldest.end(); } catch (_) { /* ignore */ }
+      set.delete(oldest);
+    }
+
+    set.add(res);
   }
 
   removeConnection(userId, res) {

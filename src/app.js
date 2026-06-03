@@ -3,7 +3,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 
-const rateLimitMiddleware = require('./middlewares/rateLimit');
+const adaptiveTokenBucket = require('./middlewares/adaptiveTokenBucket');
+const concurrencyMiddleware = require('./middlewares/concurrency');
 const sseMiddleware = require('./middlewares/sse');
 
 const authRoutes = require('./routes/authRoutes');
@@ -29,12 +30,9 @@ app.use(
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 
-// Desativar rate limiting em desenvolvimento
-if (process.env.NODE_ENV !== 'production') {
-  console.warn('⚠️ Rate limiting desativado em desenvolvimento');
-} else {
-  app.use(rateLimitMiddleware);
-}
+app.use(adaptiveTokenBucket);
+// Controle de concorrência com fila curta e timeout
+app.use(concurrencyMiddleware);
 
 app.use(sseMiddleware);
 
