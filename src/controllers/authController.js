@@ -38,11 +38,13 @@ module.exports = {
 
     const token = generateToken({ id: user.id, role: user.role });
 
+    const isProd = process.env.NODE_ENV === 'production';
+
     // Set httpOnly cookie
     res.cookie('token', token, {
       httpOnly: true,
-      secure: false,        // true em produção (HTTPS)
-      sameSite: 'lax',      // ou 'strict' se tudo for mesmo site
+      secure: isProd,       // true em produção (HTTPS)
+      sameSite: isProd ? 'none' : 'lax', // 'none' para cross-origin em produção
       path: '/',            // ← ESSENCIAL: para todas as rotas
       maxAge: 24 * 60 * 60 * 1000,
     });
@@ -52,7 +54,13 @@ module.exports = {
   },
 
   logout: async (req, res) => {
-    res.clearCookie('token');
+    const isProd = process.env.NODE_ENV === 'production';
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      path: '/',
+    });
     res.json({ ok: true });
   },
 
