@@ -20,7 +20,7 @@ const swaggerSpec = require('./config/swagger');
 
 const app = express();
 
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: false }));
 
 const allowedOrigins = (process.env.FRONTEND_URL || process.env.ALLOWED_ORIGINS || '')
   .split(',')
@@ -61,6 +61,10 @@ app.use('/api', batchRoutes);
 app.use('/api/stock', stockRoutes);
 
 app.use((err, req, res, next) => {
+  if (err.message === 'Not allowed by CORS') {
+    res.status(403).json({ error: 'Not allowed by CORS' });
+    return;
+  }
   const status = err.status || 500;
   res.status(status).json({ error: err.message || 'Erro interno' });
 });
