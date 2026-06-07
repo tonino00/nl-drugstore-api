@@ -154,6 +154,14 @@ module.exports = {
     res.json(medicine);
   },
 
+  findByBarcode: async (req, res) => {
+    const medicine = await Medicine.findOne({
+      where: { codigo_barras: req.params.code, active: true },
+    });
+    if (!medicine) return res.status(404).json({ error: 'Medicamento não encontrado' });
+    res.json(medicine);
+  },
+
   expiring: async (req, res) => {
     const days = Number(req.query.days || 7);
     const cutoff = new Date(Date.now() + days * 24 * 60 * 60 * 1000);

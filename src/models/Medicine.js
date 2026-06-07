@@ -15,6 +15,7 @@ module.exports = (sequelize, DataTypes) => {
       descricao: { type: DataTypes.TEXT },
       contraindicacoes: { type: DataTypes.TEXT },
       precisa_receita: { type: DataTypes.BOOLEAN, defaultValue: false },
+      codigo_barras: { type: DataTypes.STRING(100), allowNull: true, unique: true },
       active: { type: DataTypes.BOOLEAN, defaultValue: true },
     },
     {

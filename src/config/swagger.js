@@ -144,8 +144,26 @@ const definition = {
         tags: ['Medicines'],
         summary: 'Cadastrar medicamento (farmacêutico)',
         security: [{ bearerAuth: [] }],
-        requestBody: { required: true, content: { 'application/json': { schema: { type: 'object' } } } },
-        responses: { 201: { description: 'Criado' }, 401: { description: 'Não autorizado' }, 403: { description: 'Sem permissão' } },
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  codigo_barras: {
+                    type: 'string',
+                    nullable: true,
+                    pattern: '^\\d{8,14}$',
+                    description: 'Opcional. Se informado, 8 a 14 dígitos numéricos e único no banco.',
+                    example: '7891234567890',
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: { 201: { description: 'Criado' }, 400: { description: 'Dados inválidos' }, 401: { description: 'Não autorizado' }, 403: { description: 'Sem permissão' } },
       },
     },
     '/api/medicines/search': {
@@ -166,6 +184,25 @@ const definition = {
         responses: { 200: { description: 'OK' } },
       },
     },
+    '/api/medicines/barcode/{code}': {
+      get: {
+        tags: ['Medicines'],
+        summary: 'Buscar medicamento ativo por código de barras (público)',
+        parameters: [
+          {
+            name: 'code',
+            in: 'path',
+            required: true,
+            description: 'Código de barras (8 a 14 dígitos numéricos)',
+            schema: { type: 'string', pattern: '^\\d{8,14}$', example: '7891234567890' },
+          },
+        ],
+        responses: {
+          200: { description: 'OK' },
+          404: { description: 'Não encontrado', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } },
+        },
+      },
+    },
     '/api/medicines/{id}': {
       get: {
         tags: ['Medicines'],
@@ -178,8 +215,26 @@ const definition = {
         summary: 'Editar medicamento (farmacêutico)',
         security: [{ bearerAuth: [] }],
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
-        requestBody: { required: true, content: { 'application/json': { schema: { type: 'object' } } } },
-        responses: { 200: { description: 'OK' }, 401: { description: 'Não autorizado' }, 403: { description: 'Sem permissão' } },
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  codigo_barras: {
+                    type: 'string',
+                    nullable: true,
+                    pattern: '^\\d{8,14}$',
+                    description: 'Opcional. Se informado, 8 a 14 dígitos numéricos e único no banco.',
+                    example: '7891234567890',
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: { 200: { description: 'OK' }, 400: { description: 'Dados inválidos' }, 401: { description: 'Não autorizado' }, 403: { description: 'Sem permissão' } },
       },
       delete: {
         tags: ['Medicines'],
